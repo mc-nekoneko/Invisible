@@ -21,9 +21,9 @@ public class InvisibleTask extends BukkitRunnable {
 
     private void check(Player player) {
         if (player.hasMetadata(plugin.getPrefix())) {
-            plugin.showPlayers(player);
-        } else {
             plugin.hidePlayers(player);
+        } else {
+            plugin.showPlayers(player);
         }
     }
 }

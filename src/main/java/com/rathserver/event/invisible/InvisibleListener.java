@@ -69,21 +69,21 @@ public class InvisibleListener implements Listener {
         if (!clickedItem.equals(plugin.getInvisibleActiveItem()) && !clickedItem.equals(plugin.getInvisibleDeActiveItem())) {
             return;
         }
-        if (!checkLastUse(player)) {
-            return;
-        }
-        if (clickedItem.equals(plugin.getInvisibleActiveItem())) {
-            plugin.showPlayers(player);
-            player.setItemInHand(plugin.getInvisibleDeActiveItem());
-            player.playSound(player.getLocation(), Sound.ITEM_PICKUP, 1.6F, 0.5F);
-        }
-        if (clickedItem.equals(plugin.getInvisibleDeActiveItem())) {
-            plugin.hidePlayers(player);
-            player.setItemInHand(plugin.getInvisibleActiveItem());
-            player.playSound(player.getLocation(), Sound.ITEM_PICKUP, 1.6F, 0.5F);
+        if (checkLastUse(player)) {
+            if (clickedItem.equals(plugin.getInvisibleActiveItem())) {
+                plugin.showPlayers(player);
+                player.setItemInHand(plugin.getInvisibleDeActiveItem());
+                player.playSound(player.getLocation(), Sound.ITEM_PICKUP, 1.6F, 0.5F);
+            }
+            if (clickedItem.equals(plugin.getInvisibleDeActiveItem())) {
+                plugin.hidePlayers(player);
+                player.setItemInHand(plugin.getInvisibleActiveItem());
+                player.playSound(player.getLocation(), Sound.ITEM_PICKUP, 1.6F, 0.5F);
+            }
         }
 
         event.setCancelled(true);
+        player.updateInventory();
     }
 
     private boolean checkLastUse(Player player) {
