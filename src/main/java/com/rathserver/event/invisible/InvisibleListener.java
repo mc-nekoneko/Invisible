@@ -65,25 +65,41 @@ public class InvisibleListener implements Listener {
         }
 
         Player player = event.getPlayer();
-        ItemStack clickedItem = player.getItemInHand();
+        ItemStack clickedItem = event.getItem();
+        if (clickedItem == null) {
+            return;
+        }
         if (!clickedItem.equals(plugin.getInvisibleActiveItem()) && !clickedItem.equals(plugin.getInvisibleDeActiveItem())) {
             return;
         }
         if (checkLastUse(player)) {
             if (clickedItem.equals(plugin.getInvisibleActiveItem())) {
                 plugin.showPlayers(player);
-                player.setItemInHand(plugin.getInvisibleDeActiveItem());
-                player.playSound(player.getLocation(), Sound.ITEM_PICKUP, 1.6F, 0.5F);
+                int setId = anInt(player.getInventory().getContents(), clickedItem);
+                player.getInventory().setItem(setId, plugin.getInvisibleDeActiveItem());
+                player.playSound(player.getLocation(), Sound.ENTITY_ITEM_PICKUP, 1.6F, 0.5F);
             }
             if (clickedItem.equals(plugin.getInvisibleDeActiveItem())) {
                 plugin.hidePlayers(player);
-                player.setItemInHand(plugin.getInvisibleActiveItem());
-                player.playSound(player.getLocation(), Sound.ITEM_PICKUP, 1.6F, 0.5F);
+                int setId = anInt(player.getInventory().getContents(), clickedItem);
+                player.getInventory().setItem(setId, plugin.getInvisibleActiveItem());
+                player.playSound(player.getLocation(), Sound.ENTITY_ITEM_PICKUP, 1.6F, 0.5F);
             }
         }
 
         event.setCancelled(true);
         player.updateInventory();
+    }
+
+    private int anInt(ItemStack[] itemStacks, ItemStack target) {
+        for (int i = 0; i < itemStacks.length; i++) {
+            ItemStack itemStack = itemStacks[i];
+            if (itemStack != null && itemStack.equals(target)) {
+                return i;
+            }
+        }
+
+        return 0;
     }
 
     private boolean checkLastUse(Player player) {
