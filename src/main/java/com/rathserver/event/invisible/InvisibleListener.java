@@ -2,10 +2,12 @@ package com.rathserver.event.invisible;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Sound;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -55,6 +57,17 @@ public class InvisibleListener implements Listener {
         if (drop.equals(plugin.getInvisibleActiveItem()) || drop.equals(plugin.getInvisibleDeActiveItem())) {
             event.setCancelled(true);
         }
+    }
+
+    @EventHandler
+    public void pvp(EntityDamageByEntityEvent event) {
+        if (event.getDamager().getType() != EntityType.PLAYER || event.getEntityType() != EntityType.PLAYER) {
+            return;
+        }
+
+        Player target = (Player) event.getEntity();
+        Inventory inventory = target.getInventory();
+        if (inventory.contains(plugin.getInvisibleActiveItem())) event.setCancelled(true);
     }
 
     @EventHandler
