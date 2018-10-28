@@ -50,7 +50,7 @@ public class InvisiblePlugin extends JavaPlugin {
             return deActiveInvisibleItem;
         }
 
-        deActiveInvisibleItem = new ItemStack(Material.EYE_OF_ENDER);
+        deActiveInvisibleItem = new ItemStack(Material.ENDER_EYE);
         ItemMeta itemMeta = deActiveInvisibleItem.getItemMeta();
         itemMeta.setDisplayName(ChatColor.GRAY + "Show Players");
         deActiveInvisibleItem.setItemMeta(itemMeta);
