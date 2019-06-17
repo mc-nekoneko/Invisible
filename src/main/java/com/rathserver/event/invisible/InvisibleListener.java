@@ -9,6 +9,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -34,32 +35,34 @@ public class InvisibleListener implements Listener {
     @EventHandler
     public void playerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        if (player.hasMetadata(plugin.getPrefix())) {
-            player.removeMetadata(plugin.getPrefix(), plugin);
+        if (player.hasMetadata(InvisiblePlugin.METADATA_KEY)) {
+            player.removeMetadata(InvisiblePlugin.METADATA_KEY, this.plugin);
         }
 
         Inventory inventory = player.getInventory();
-        if (inventory.contains(plugin.getInvisibleActiveItem())) inventory.remove(plugin.getInvisibleActiveItem());
-        if (inventory.contains(plugin.getInvisibleDeActiveItem())) inventory.remove(plugin.getInvisibleDeActiveItem());
+        if (inventory.contains(this.plugin.getInvisibleActiveItem()))
+            inventory.remove(this.plugin.getInvisibleActiveItem());
+        if (inventory.contains(this.plugin.getInvisibleDeActiveItem()))
+            inventory.remove(this.plugin.getInvisibleDeActiveItem());
 
-        inventory.setItem(4, plugin.getInvisibleDeActiveItem());
+        inventory.setItem(4, this.plugin.getInvisibleDeActiveItem().clone());
     }
 
     @EventHandler
     public void playerDeath(PlayerDeathEvent event) {
-        event.getDrops().remove(plugin.getInvisibleActiveItem());
-        event.getDrops().remove(plugin.getInvisibleDeActiveItem());
+        event.getDrops().remove(this.plugin.getInvisibleActiveItem());
+        event.getDrops().remove(this.plugin.getInvisibleDeActiveItem());
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void playerDropItem(PlayerDropItemEvent event) {
         ItemStack drop = event.getItemDrop().getItemStack();
-        if (drop.equals(plugin.getInvisibleActiveItem()) || drop.equals(plugin.getInvisibleDeActiveItem())) {
+        if (drop.equals(this.plugin.getInvisibleActiveItem()) || drop.equals(this.plugin.getInvisibleDeActiveItem())) {
             event.setCancelled(true);
         }
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void pvp(EntityDamageByEntityEvent event) {
         if (event.getDamager().getType() != EntityType.PLAYER || event.getEntityType() != EntityType.PLAYER) {
             return;
@@ -67,13 +70,12 @@ public class InvisibleListener implements Listener {
 
         Player target = (Player) event.getEntity();
         Inventory inventory = target.getInventory();
-        if (inventory.contains(plugin.getInvisibleActiveItem())) event.setCancelled(true);
+        if (inventory.contains(this.plugin.getInvisibleActiveItem())) event.setCancelled(true);
     }
 
     @EventHandler
     public void playerInteract(PlayerInteractEvent event) {
-        if ((event.getAction() != Action.RIGHT_CLICK_BLOCK && event.getAction() != Action.RIGHT_CLICK_AIR)
-                || !event.hasItem()) {
+        if (event.getAction() != Action.RIGHT_CLICK_BLOCK && event.getAction() != Action.RIGHT_CLICK_AIR) {
             return;
         }
 
@@ -82,26 +84,45 @@ public class InvisibleListener implements Listener {
         if (clickedItem == null) {
             return;
         }
-        if (!clickedItem.equals(plugin.getInvisibleActiveItem()) && !clickedItem.equals(plugin.getInvisibleDeActiveItem())) {
+        if (!clickedItem.equals(this.plugin.getInvisibleActiveItem()) && !clickedItem.equals(this.plugin.getInvisibleDeActiveItem())) {
             return;
         }
         if (checkLastUse(player)) {
-            if (clickedItem.equals(plugin.getInvisibleActiveItem())) {
-                plugin.showPlayers(player);
+            if (clickedItem.equals(this.plugin.getInvisibleActiveItem())) {
+                this.plugin.showPlayers(player);
                 int setId = anInt(player.getInventory().getContents(), clickedItem);
-                player.getInventory().setItem(setId, plugin.getInvisibleDeActiveItem());
+                player.getInventory().setItem(setId, this.plugin.getInvisibleDeActiveItem().clone());
                 player.playSound(player.getLocation(), Sound.ENTITY_ITEM_PICKUP, 1.6F, 0.5F);
             }
-            if (clickedItem.equals(plugin.getInvisibleDeActiveItem())) {
-                plugin.hidePlayers(player);
+            if (clickedItem.equals(this.plugin.getInvisibleDeActiveItem())) {
+                this.plugin.hidePlayers(player);
                 int setId = anInt(player.getInventory().getContents(), clickedItem);
-                player.getInventory().setItem(setId, plugin.getInvisibleActiveItem());
+                player.getInventory().setItem(setId, this.plugin.getInvisibleActiveItem().clone());
                 player.playSound(player.getLocation(), Sound.ENTITY_ITEM_PICKUP, 1.6F, 0.5F);
             }
         }
 
         event.setCancelled(true);
         player.updateInventory();
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void inventoryClick(InventoryClickEvent event) {
+        ItemStack currentItem = event.getCurrentItem();
+        if (currentItem == null || !currentItem.equals(this.plugin.getInvisibleActiveItem()) && !currentItem.equals(this.plugin.getInvisibleDeActiveItem())) {
+            return;
+        }
+
+        switch (event.getView().getTopInventory().getType()) {
+            case PLAYER:
+            case CREATIVE:
+            case CRAFTING:
+                break;
+            default:
+                event.setCancelled(true);
+                break;
+        }
+
     }
 
     private int anInt(ItemStack[] itemStacks, ItemStack target) {
@@ -116,15 +137,15 @@ public class InvisibleListener implements Listener {
     }
 
     private boolean checkLastUse(Player player) {
-        if (lastUsed.containsKey(player.getUniqueId())) {
-            long lastUse = lastUsed.get(player.getUniqueId());
+        if (this.lastUsed.containsKey(player.getUniqueId())) {
+            long lastUse = this.lastUsed.get(player.getUniqueId());
             if ((System.currentTimeMillis() - lastUse) <= 3000) {
                 player.sendMessage(ChatColor.RED + "3秒間連続して使用できません。");
                 return false;
             }
         }
 
-        lastUsed.put(player.getUniqueId(), System.currentTimeMillis());
+        this.lastUsed.put(player.getUniqueId(), System.currentTimeMillis());
         return true;
     }
 }

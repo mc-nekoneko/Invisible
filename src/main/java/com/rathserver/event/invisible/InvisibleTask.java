@@ -16,14 +16,14 @@ public class InvisibleTask extends BukkitRunnable {
 
     @Override
     public void run() {
-        plugin.getServer().getOnlinePlayers().forEach(this::check);
+        this.plugin.getServer().getOnlinePlayers().forEach(this::check);
     }
 
     private void check(Player player) {
-        if (player.hasMetadata(plugin.getPrefix())) {
-            plugin.hidePlayers(player);
+        if (player.hasMetadata(InvisiblePlugin.METADATA_KEY)) {
+            this.plugin.hidePlayers(player);
         } else {
-            plugin.showPlayers(player);
+            this.plugin.showPlayers(player);
         }
     }
 }

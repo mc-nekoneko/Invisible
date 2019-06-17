@@ -1,4 +1,5 @@
-name: InvisiblePlugin
+name: ${project.name}
 version: ${project.version}
 main: com.rathserver.event.invisible.InvisiblePlugin
 author: Nekoneko@NekonekoNetwork
+api-version: 1.13

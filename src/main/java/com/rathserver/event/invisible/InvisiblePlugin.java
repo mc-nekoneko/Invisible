@@ -1,6 +1,5 @@
 package com.rathserver.event.invisible;
 
-import lombok.Getter;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -11,60 +10,65 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class InvisiblePlugin extends JavaPlugin {
 
-    @Getter
-    private String prefix = "invisible";
+    static final String METADATA_KEY = "invisible";
+
+    private InvisibleTask task;
 
     private ItemStack activeInvisibleItem;
     private ItemStack deActiveInvisibleItem;
-    private InvisibleTask task;
 
     @Override
     public void onEnable() {
-        super.onEnable();
-        getServer().getPluginManager().registerEvents(new InvisibleListener(this), this);
-        (task = new InvisibleTask(this)).runTaskTimer(this, 0L, 60L);
+        this.task = new InvisibleTask(this);
+        this.task.runTaskTimer(this, 0L, 60L);
+        this.getServer().getPluginManager().registerEvents(new InvisibleListener(this), this);
     }
 
     @Override
     public void onDisable() {
-        super.onDisable();
-        task.cancel();
-        task = null;
+        if (this.task != null) {
+            this.task.cancel();
+            this.task = null;
+        }
     }
 
     ItemStack getInvisibleActiveItem() {
-        if (activeInvisibleItem != null) {
-            return activeInvisibleItem;
+        if (this.activeInvisibleItem != null) {
+            return this.activeInvisibleItem;
         }
 
-        activeInvisibleItem = new ItemStack(Material.ENDER_PEARL);
-        ItemMeta itemMeta = activeInvisibleItem.getItemMeta();
-        itemMeta.setDisplayName(ChatColor.GRAY + "Hide Players");
-        activeInvisibleItem.setItemMeta(itemMeta);
+        this.activeInvisibleItem = new ItemStack(Material.ENDER_PEARL);
+        ItemMeta itemMeta = this.activeInvisibleItem.getItemMeta();
+        if (itemMeta != null) {
+            itemMeta.setDisplayName(ChatColor.GRAY + "Hide Players");
+        }
+        this.activeInvisibleItem.setItemMeta(itemMeta);
 
-        return activeInvisibleItem;
+        return this.activeInvisibleItem;
     }
 
     ItemStack getInvisibleDeActiveItem() {
-        if (deActiveInvisibleItem != null) {
-            return deActiveInvisibleItem;
+        if (this.deActiveInvisibleItem != null) {
+            return this.deActiveInvisibleItem;
         }
 
-        deActiveInvisibleItem = new ItemStack(Material.ENDER_EYE);
-        ItemMeta itemMeta = deActiveInvisibleItem.getItemMeta();
-        itemMeta.setDisplayName(ChatColor.GRAY + "Show Players");
-        deActiveInvisibleItem.setItemMeta(itemMeta);
+        this.deActiveInvisibleItem = new ItemStack(Material.ENDER_EYE);
+        ItemMeta itemMeta = this.deActiveInvisibleItem.getItemMeta();
+        if (itemMeta != null) {
+            itemMeta.setDisplayName(ChatColor.GRAY + "Show Players");
+        }
+        this.deActiveInvisibleItem.setItemMeta(itemMeta);
 
-        return deActiveInvisibleItem;
+        return this.deActiveInvisibleItem;
     }
 
     void hidePlayers(Player player) {
-        getServer().getOnlinePlayers().forEach(player::hidePlayer);
-        player.setMetadata(getPrefix(), new FixedMetadataValue(this, true));
+        getServer().getOnlinePlayers().forEach(target -> player.hidePlayer(this, target));
+        player.setMetadata(METADATA_KEY, new FixedMetadataValue(this, true));
     }
 
     void showPlayers(Player player) {
-        getServer().getOnlinePlayers().forEach(player::showPlayer);
-        player.removeMetadata(getPrefix(), this);
+        getServer().getOnlinePlayers().forEach(target -> player.showPlayer(this, target));
+        player.removeMetadata(METADATA_KEY, this);
     }
 }
