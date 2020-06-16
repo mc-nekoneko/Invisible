@@ -28,11 +28,13 @@ import org.bukkit.ChatColor;
 import org.bukkit.Sound;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -95,6 +97,25 @@ public class InvisibleListener implements Listener {
         Player target = (Player) event.getEntity();
         Inventory inventory = target.getInventory();
         if (inventory.contains(this.plugin.getInvisibleActiveItem())) event.setCancelled(true);
+    }
+
+    @EventHandler
+    public void projectileLaunch(ProjectileLaunchEvent event) {
+        Projectile entity = event.getEntity();
+        if (entity.getType() != EntityType.ENDER_PEARL && entity.getType() != EntityType.ENDER_SIGNAL) {
+            return;
+        }
+        if (entity.getShooter() instanceof Player) {
+            Player shooter = (Player) entity.getShooter();
+            ItemStack itemStack = shooter.getInventory().getItemInMainHand();
+            if (!itemStack.equals(this.plugin.getInvisibleActiveItem()) && !itemStack.equals(this.plugin.getInvisibleDeActiveItem())) {
+                itemStack = shooter.getInventory().getItemInOffHand();
+                if (!itemStack.equals(this.plugin.getInvisibleActiveItem()) && !itemStack.equals(this.plugin.getInvisibleDeActiveItem())) {
+                    return;
+                }
+            }
+            event.setCancelled(true);
+        }
     }
 
     @EventHandler
