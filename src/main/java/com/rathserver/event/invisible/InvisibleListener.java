@@ -25,6 +25,7 @@ package com.rathserver.event.invisible;
  */
 
 import org.bukkit.ChatColor;
+import org.bukkit.GameMode;
 import org.bukkit.Sound;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -61,6 +62,9 @@ public class InvisibleListener implements Listener {
     @EventHandler
     public void playerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
+        if (player.getGameMode() != GameMode.SURVIVAL && player.getGameMode() != GameMode.ADVENTURE) {
+            return;
+        }
         if (player.hasMetadata(InvisiblePlugin.METADATA_KEY)) {
             player.removeMetadata(InvisiblePlugin.METADATA_KEY, this.plugin);
         }
