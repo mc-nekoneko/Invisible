@@ -27,10 +27,14 @@ public class InvToolCommand implements CommandExecutor {
 
         Player player = (Player) sender;
         PlayerInventory inventory = player.getInventory();
+        if (inventory.contains(Items.getInvisibleActiveItem()))
+            inventory.remove(Items.getInvisibleActiveItem());
+        if (inventory.contains(Items.getInvisibleDeActiveItem()))
+            inventory.remove(Items.getInvisibleDeActiveItem());
         if (player.hasMetadata(InvisiblePlugin.METADATA_KEY)) {
-            inventory.addItem(Items.getInvisibleDeActiveItem().clone());
-        } else {
             inventory.addItem(Items.getInvisibleActiveItem().clone());
+        } else {
+            inventory.addItem(Items.getInvisibleDeActiveItem().clone());
         }
         player.playSound(player.getLocation(), Sound.ENTITY_ITEM_PICKUP, 1.6F, 0.5F);
         return true;
