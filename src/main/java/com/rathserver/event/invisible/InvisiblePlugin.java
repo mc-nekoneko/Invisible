@@ -24,7 +24,7 @@ package com.rathserver.event.invisible;
  *  SOFTWARE.
  */
 
-import com.rathserver.event.invisible.command.InvToolCommand;
+import com.rathserver.event.invisible.command.*;
 import org.bukkit.entity.Player;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -47,6 +47,8 @@ public class InvisiblePlugin extends JavaPlugin {
         this.getServer().getPluginManager().registerEvents(new InvisibleListener(this), this);
 
         Optional.ofNullable(this.getCommand("invtool")).ifPresent(command -> command.setExecutor(new InvToolCommand(this)));
+        Optional.ofNullable(this.getCommand("invall")).ifPresent(command -> command.setExecutor(new InvAllCommand(this)));
+        Optional.ofNullable(this.getCommand("showall")).ifPresent(command -> command.setExecutor(new ShowAllCommand(this)));
     }
 
     @Override
@@ -57,12 +59,12 @@ public class InvisiblePlugin extends JavaPlugin {
         }
     }
 
-    void hidePlayers(Player player) {
+    public void hidePlayers(Player player) {
         getServer().getOnlinePlayers().forEach(target -> player.hidePlayer(this, target));
         player.setMetadata(METADATA_KEY, new FixedMetadataValue(this, true));
     }
 
-    void showPlayers(Player player) {
+    public void showPlayers(Player player) {
         getServer().getOnlinePlayers().forEach(target -> player.showPlayer(this, target));
         player.removeMetadata(METADATA_KEY, this);
     }

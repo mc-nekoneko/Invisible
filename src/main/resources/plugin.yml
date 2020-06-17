@@ -6,7 +6,15 @@ api-version: 1.13
 commands:
   invtool:
     permission: invisible.command.invtool
+  invall:
+    permission: invisible.command.invall
+  showall:
+    permission: invisible.command.showall
 
 permissions:
   invisible.command.invtool:
+    default: true
+  invisible.command.invall:
+    default: true
+  invisible.command.showall:
     default: true
