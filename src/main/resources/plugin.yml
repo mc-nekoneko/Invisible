@@ -3,3 +3,10 @@ version: ${project.version}
 main: com.rathserver.event.invisible.InvisiblePlugin
 author: Nekoneko@NekonekoNetwork
 api-version: 1.13
+commands:
+  invtool:
+    permission: invisible.command.invtool
+
+permissions:
+  invisible.command.invtool:
+    default: true

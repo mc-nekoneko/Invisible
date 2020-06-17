@@ -24,22 +24,18 @@ package com.rathserver.event.invisible;
  *  SOFTWARE.
  */
 
-import org.bukkit.ChatColor;
-import org.bukkit.Material;
+import com.rathserver.event.invisible.command.InvToolCommand;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.Optional;
+
 public class InvisiblePlugin extends JavaPlugin {
 
-    static final String METADATA_KEY = "invisible";
+    public static final String METADATA_KEY = "invisible";
 
     private InvisibleTask task;
-
-    private ItemStack activeInvisibleItem;
-    private ItemStack deActiveInvisibleItem;
 
     @Override
     public void onEnable() {
@@ -49,6 +45,8 @@ public class InvisiblePlugin extends JavaPlugin {
         this.task.runTaskTimer(this, 0L, 60L);
 
         this.getServer().getPluginManager().registerEvents(new InvisibleListener(this), this);
+
+        Optional.ofNullable(this.getCommand("invtool")).ifPresent(command -> command.setExecutor(new InvToolCommand(this)));
     }
 
     @Override
