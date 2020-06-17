@@ -42,8 +42,10 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.persistence.PersistentDataType;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -70,24 +72,26 @@ public class InvisibleListener implements Listener {
         }
 
         Inventory inventory = player.getInventory();
-        if (inventory.contains(this.plugin.getInvisibleActiveItem()))
-            inventory.remove(this.plugin.getInvisibleActiveItem());
-        if (inventory.contains(this.plugin.getInvisibleDeActiveItem()))
-            inventory.remove(this.plugin.getInvisibleDeActiveItem());
+        if (inventory.contains(Items.getInvisibleActiveItem()))
+            inventory.remove(Items.getInvisibleActiveItem());
+        if (inventory.contains(Items.getInvisibleDeActiveItem()))
+            inventory.remove(Items.getInvisibleDeActiveItem());
 
-        inventory.setItem(4, this.plugin.getInvisibleDeActiveItem().clone());
+        inventory.setItem(4, Items.getInvisibleDeActiveItem().clone());
     }
 
     @EventHandler
     public void playerDeath(PlayerDeathEvent event) {
-        event.getDrops().remove(this.plugin.getInvisibleActiveItem());
-        event.getDrops().remove(this.plugin.getInvisibleDeActiveItem());
+        List<ItemStack> drops = event.getDrops();
+        drops.removeIf(itemStack -> itemStack.getItemMeta() != null &&
+                itemStack.getItemMeta().getPersistentDataContainer().has(Items.getInvisibleKey(), PersistentDataType.STRING));
     }
 
     @EventHandler(ignoreCancelled = true)
     public void playerDropItem(PlayerDropItemEvent event) {
-        ItemStack drop = event.getItemDrop().getItemStack();
-        if (drop.equals(this.plugin.getInvisibleActiveItem()) || drop.equals(this.plugin.getInvisibleDeActiveItem())) {
+        ItemStack itemStack = event.getItemDrop().getItemStack();
+        if (itemStack.getItemMeta() != null &&
+                itemStack.getItemMeta().getPersistentDataContainer().has(Items.getInvisibleKey(), PersistentDataType.STRING)) {
             event.setCancelled(true);
         }
     }
@@ -100,7 +104,7 @@ public class InvisibleListener implements Listener {
 
         Player target = (Player) event.getEntity();
         Inventory inventory = target.getInventory();
-        if (inventory.contains(this.plugin.getInvisibleActiveItem())) event.setCancelled(true);
+        if (inventory.contains(Items.getInvisibleActiveItem())) event.setCancelled(true);
     }
 
     @EventHandler
@@ -112,9 +116,10 @@ public class InvisibleListener implements Listener {
         if (entity.getShooter() instanceof Player) {
             Player shooter = (Player) entity.getShooter();
             ItemStack itemStack = shooter.getInventory().getItemInMainHand();
-            if (!itemStack.equals(this.plugin.getInvisibleActiveItem()) && !itemStack.equals(this.plugin.getInvisibleDeActiveItem())) {
+
+            if (!itemStack.equals(Items.getInvisibleActiveItem()) && !itemStack.equals(Items.getInvisibleDeActiveItem())) {
                 itemStack = shooter.getInventory().getItemInOffHand();
-                if (!itemStack.equals(this.plugin.getInvisibleActiveItem()) && !itemStack.equals(this.plugin.getInvisibleDeActiveItem())) {
+                if (!itemStack.equals(Items.getInvisibleActiveItem()) && !itemStack.equals(Items.getInvisibleDeActiveItem())) {
                     return;
                 }
             }
@@ -133,20 +138,21 @@ public class InvisibleListener implements Listener {
         if (clickedItem == null) {
             return;
         }
-        if (!clickedItem.equals(this.plugin.getInvisibleActiveItem()) && !clickedItem.equals(this.plugin.getInvisibleDeActiveItem())) {
+        if (clickedItem.getItemMeta() == null ||
+                !clickedItem.getItemMeta().getPersistentDataContainer().has(Items.getInvisibleKey(), PersistentDataType.STRING)) {
             return;
         }
         if (checkLastUse(player)) {
-            if (clickedItem.equals(this.plugin.getInvisibleActiveItem())) {
+            if (clickedItem.equals(Items.getInvisibleActiveItem())) {
                 this.plugin.showPlayers(player);
                 int setId = anInt(player.getInventory().getContents(), clickedItem);
-                player.getInventory().setItem(setId, this.plugin.getInvisibleDeActiveItem().clone());
+                player.getInventory().setItem(setId, Items.getInvisibleDeActiveItem().clone());
                 player.playSound(player.getLocation(), Sound.ENTITY_ITEM_PICKUP, 1.6F, 0.5F);
             }
-            if (clickedItem.equals(this.plugin.getInvisibleDeActiveItem())) {
+            if (clickedItem.equals(Items.getInvisibleDeActiveItem())) {
                 this.plugin.hidePlayers(player);
                 int setId = anInt(player.getInventory().getContents(), clickedItem);
-                player.getInventory().setItem(setId, this.plugin.getInvisibleActiveItem().clone());
+                player.getInventory().setItem(setId, Items.getInvisibleActiveItem().clone());
                 player.playSound(player.getLocation(), Sound.ENTITY_ITEM_PICKUP, 1.6F, 0.5F);
             }
         }
@@ -158,7 +164,9 @@ public class InvisibleListener implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void inventoryClick(InventoryClickEvent event) {
         ItemStack currentItem = event.getCurrentItem();
-        if (currentItem == null || !currentItem.equals(this.plugin.getInvisibleActiveItem()) && !currentItem.equals(this.plugin.getInvisibleDeActiveItem())) {
+        if (currentItem == null
+                || currentItem.getItemMeta() == null
+                || !currentItem.getItemMeta().getPersistentDataContainer().has(Items.getInvisibleKey(), PersistentDataType.STRING)) {
             return;
         }
 
